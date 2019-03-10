@@ -2,18 +2,20 @@ FROM jupyter/scipy-notebook:17aba6048f44
 
 USER root
 
+ADD pyAudioAnalysis /git-code
+
 COPY sources.list /etc/apt/sources.list
+COPY pip.conf /etc/pip.conf
 
 # Do not exclude man pages & other documentation
 RUN rm /etc/dpkg/dpkg.cfg.d/excludes
-# Reinstall all currently installed packages in order to get the man pages back
 RUN apt-get update && \
-    dpkg -l | grep ^ii | cut -d' ' -f3 | xargs apt-get install -y --reinstall && \
-    apt-get -y install man-db && \
+    apt-get -y install man-db libmagic-dev && \
     rm -r /var/lib/apt/lists/*
 
 USER $NB_UID
 
-RUN pip install bash_kernel; \
-    python -m bash_kernel.install;
+RUN pip install bash_kernel numpy matplotlib scipy sklearn hmmlearn simplejson eyed3 pydub librosa; \
+    python -m bash_kernel.install; \
+    pip install /git-code
 
